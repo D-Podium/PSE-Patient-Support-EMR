@@ -1,0 +1,51 @@
+body { background-color: #121212; color: #fff; font-family: 'Inter', sans-serif; }
+
+.card {
+    background-color: #1F1F1F;
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+
+.logo-container {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.logo-container img {
+    width: 72px; /* Set a specific size for the logo */
+    height: 72px;
+    border-radius: 0.5rem; /* Match the input field rounding */
+}
+
+.app-title {
+    color: #e8f9f4ff;
+    text-shadow: 0 0 8px #e91e63;
+    cursor: default;
+}
+
+
+.form-control {
+    background-color: #2A2A2A;
+    color: #fff;
+    border: 1px solid #444;
+    border-radius: 8px;
+}
+.form-control::placeholder { color: #F5F5F5; }
+
+.btn-primary {
+    background-color: #00D79B;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+}
+.btn-primary:hover { background-color: #00C68A; }
+
+a.coral-link {
+    color: coral;
+    font-weight: 500;
+}
+a.coral-link:hover {
+    color: #ff7f50;
+    text-decoration: none;
+}

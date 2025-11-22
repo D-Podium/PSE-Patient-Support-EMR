@@ -1,0 +1,21 @@
+body { font-family:'Inter',sans-serif; background:#121212; color:#fff; }
+.navbar { background:#1F1F1F; padding:15px 30px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1);}
+.navbar .logo { font-weight:bold; font-size:1.5rem; color:#f06292; }
+h1,h2,h3,h4,h5,h6, p, span, td, th, label { color:#F5F5F5; }
+.card-custom { background-color:#1A2822; border-radius:1rem; padding:2rem; box-shadow:0 8px 20px rgba(0,0,0,0.4); margin-bottom:2rem;}
+.form-control, .form-select { background-color:#2A3C35; color:#fff; border:1px solid rgba(255,255,255,0.1); border-radius:0.5rem; padding:0.75rem 1rem;}
+.accordion-button { background-color:#1F3B33; color:#00D79B; font-weight: 600; }
+.accordion-button:not(.collapsed) { background-color:#00D79B; color:#121212; }
+.accordion-button:focus { box-shadow: none; }
+.table-custom th { background:#1F3B33; color:#00D79B; font-weight:600; }
+.table-custom td { background:#1A2822; color:#fff; }
+.table-custom tr.safe td { background-color: rgba(0,215,155,0.15); }
+.table-custom tr.warning td { background-color: rgba(250,100,100,0.15); }
+.ai-card { background:#22332E; border-radius:1rem; padding:1.5rem; margin-top:1.5rem; color:#fff; }
+.ai-card h5 { color:#00D79B; }
+.btn-teal { background:#00D79B; color:#fff; border:none; }
+.btn-teal:hover { background:#00c48f; color:#fff; }
+.btn-info { background:#28a745; border-color: #28a745; } /* Changed to green for better visibility */
+.btn-info:hover { background: #218838; border-color: #1e7e34; }
+.modal-content { border: none; }
+.modal-header { border-bottom: 1px solid rgba(255,255,255,0.1); }

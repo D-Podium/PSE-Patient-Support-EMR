@@ -1,0 +1,110 @@
+/* Define custom colors and styles inspired by the dark green theme */
+        :root {
+            --color-bg-primary: #16241E; /* Deep Charcoal Green */
+            --color-accent-teal: #00D79B; /* Bright Teal for CTA/Primary action */
+            --color-accent-coral: #E07A5F; /* Coral/Reddish-Pink from the Logo for branding */
+            --color-card-bg: #1A2822; /* Slightly lighter card background */
+            --color-input-bg: #2A3C35; /* Darker green input field */
+            --color-text-light: #F5F5F5;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-bg-primary);
+            color: var(--color-text-light);
+            display: flex;
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Custom Card Styling */
+        .card-custom {
+            background-color: var(--color-card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem; /* Highly rounded corners */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); /* Stronger shadow for lift */
+        }
+
+        /* Form Control Styling */
+        .form-control-custom, .form-select-custom {
+            background-color: var(--color-input-bg);
+            color: var(--color-text-light);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem; /* Medium rounded corners */
+            transition: all 0.2s ease-in-out;
+        }
+
+        .form-control-custom::placeholder {
+            color: rgba(245, 245, 245, 0.6);
+        }
+
+        .form-control-custom:focus, .form-select-custom:focus {
+            background-color: #20302A;
+            border-color: var(--color-accent-teal);
+            box-shadow: 0 0 0 0.25rem rgba(0, 215, 155, 0.4); /* Teal glow */
+            color: var(--color-text-light);
+        }
+
+        /* Teal Button Styling */
+        .btn-teal {
+            background-color: var(--color-accent-teal);
+            border: none;
+            color: #16241E; /* Dark text for contrast */
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 215, 155, 0.4);
+        }
+
+        .btn-teal:hover {
+            background-color: #00B388; /* Slightly darker teal on hover */
+            color: #16241E;
+            transform: scale(1.01);
+            box-shadow: 0 6px 15px rgba(0, 215, 155, 0.6);
+        }
+
+        /* Link Styling (using logo's coral color for branding) */
+        .link-coral {
+            color: var(--color-accent-coral);
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .link-coral:hover {
+            color: #FF9980; /* Lighter coral on hover */
+            text-decoration: none;
+        }
+
+        /* Alert Styling */
+        .alert-custom-error {
+            background-color: rgba(139, 0, 0, 0.3);
+            color: #FFB3B3;
+            border-color: #8B0000;
+            border-radius: 0.5rem;
+        }
+        .alert-custom-success {
+            background-color: rgba(0, 100, 70, 0.3);
+            color: #99FFCC;
+            border-color: #006446;
+            border-radius: 0.5rem;
+        }
+        
+        .logo-container {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .logo-container img {
+            width: 72px; /* Set a specific size for the logo */
+            height: 72px;
+            border-radius: 0.5rem; /* Match the input field rounding */
+        }
+
+        .app-title {
+            color: #e8f9f4ff;
+            text-shadow: 0 0 8px #e91e63;
+            cursor: default;
+        }
