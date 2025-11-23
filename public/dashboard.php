@@ -2,6 +2,7 @@
 session_start();
 require __DIR__ . '/../src/config.php'; // Load DB + API keys
 require __DIR__ . '/../src/dorra_config.php'; // Required for API_URL and API_KEY, assuming config.php only holds DB
+// NOTE: dorra_config.php must contain the dorra_post function
 
 if(!isset($_SESSION['patient_id'])) {
     header("Location: ../src/index.php");
@@ -23,23 +24,14 @@ if(isset($_GET['logout'])) {
 
 // Fetch list of valid drugs from Dorra PharmaVigilance API for autocomplete
 $valid_drugs = [];
-// Assuming API_URL and API_KEY are defined in dorra_config.php or config.php
-if (defined('API_URL') && defined('API_KEY')) {
-    $ch = curl_init(API_URL . "/v1/pharmavigilance/interactions");
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "Authorization: Token " . API_KEY,
-        "Content-Type: application/json"
-    ]);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($ch);
-    curl_close($ch);
+// NOTE: Changed to use dorra_get for consistency and robustness
+// Assuming the dorra_get function in dorra_config.php handles the full URL and headers correctly.
+$drug_data = dorra_get("/v1/pharmavigilance/interactions"); 
 
-    $drug_data = json_decode($response, true);
-    if(isset($drug_data['results']) && is_array($drug_data['results'])) {
-        foreach($drug_data['results'] as $d) {
-            if(isset($d['drug_name'])) {
-                $valid_drugs[] = $d['drug_name'];
-            }
+if (isset($drug_data['results']) && is_array($drug_data['results'])) {
+    foreach ($drug_data['results'] as $d) {
+        if (isset($d['drug_name'])) {
+            $valid_drugs[] = $d['drug_name'];
         }
     }
 }
@@ -53,31 +45,40 @@ if(isset($_POST['ai_query'])) {
     if(!$emr_patient_id) {
         $api_data = ['error_message' => 'EMR Patient ID not found in session.'];
     } else {
-        $ch = curl_init(API_URL . "/v1/ai/drug-safety");
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            "Authorization: Token " . API_KEY,
-            "Content-Type: application/json"
-        ]);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
-            'query' => $query,
-            'patient_id' => $emr_patient_id // Use EMR ID for Dorra API
-        ]));
-        $response = curl_exec($ch);
-        curl_close($ch);
+        // CRITICAL FIX: Cast the EMR ID to integer for the API
+        $emr_id_int = (int)$emr_patient_id; 
 
-        $api_data = json_decode($response, true);
+        // Use the documented generic AI endpoint /v1/ai/emr
+        $endpoint = "/v1/ai/emr"; 
+        
+        // Refine the prompt to be more descriptive for the AI
+        $prompt = "Check the pregnancy safety profile for the drug: **{$query}** across all trimesters.";
+
+        $payload = [
+            'prompt' => $prompt,
+            'patient' => $emr_id_int 
+        ];
+        
+        $api_result = dorra_post($endpoint, $payload);
+
+        // Process the structured response from dorra_post
+        $http_code = $api_result['http_code'] ?? 0;
+        $api_error = $api_result['error'] ?? '';
+        $api_data = $api_result['json'] ?? null;
+        // --- END API INTEGRATION ---
     }
 
 
     // Fallback if API fails or no data
-    if(empty($api_data) || isset($api_data['error_message'])) {
-        $html = "<div class='alert alert-danger mt-3'>Error querying AI safety engine. " . ($api_data['error_message'] ?? 'API connection failed.') . "</div>";
+    if(empty($api_data) || $http_code >= 400 || $api_error) {
+        $error_message = $api_data['message'] ?? $api_data['detail'] ?? ($api_error ?: 'API connection failed or returned an error.');
+        $html = "<div class='alert alert-danger mt-3'>Error querying AI safety engine ($http_code). ". htmlspecialchars($error_message) ."</div>";
     } else {
+        // SUCCESS: Display the results
         $html = "<div class='ai-card'>";
         $html .= "<h5>Drug: <strong>".htmlspecialchars($api_data['drug'] ?? $query)."</strong></h5>";
         $html .= "<ul>";
+        // NOTE: These keys MUST match the actual response keys from the /v1/ai/drug-safety endpoint
         $html .= "<li>1st Trimester: <strong>".htmlspecialchars($api_data['1st_trimester'] ?? 'Unknown')."</strong></li>";
         $html .= "<li>2nd Trimester: <strong>".htmlspecialchars($api_data['2nd_trimester'] ?? 'Unknown')."</strong></li>";
         $html .= "<li>3rd Trimester: <strong>".htmlspecialchars($api_data['3rd_trimester'] ?? 'Unknown')."</strong></li>";
@@ -101,6 +102,7 @@ if(isset($_POST['ai_query'])) {
 <link rel="shortcut icon" href="assets/images/logo.avif" type="image/x-icon">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
+/* ... (CSS remains the same) ... */
 body { background-color: #121212; color: #fff; font-family: 'Inter', sans-serif; }
 .container { max-width: 900px; }
 .card { background-color: #1F1F1F; border-radius: 12px; padding: 20px; margin-top: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); color: #e0e0e0; }
@@ -129,14 +131,15 @@ a.text-light:hover { color: #48A6FF; text-decoration: none; }
 </head>
 <body>
 <div class="container">
-    <div class="d-flex justify-content-between align-items-center mt-4">
-        <h3>Welcome, <?= htmlspecialchars($first_name) ?>!</h3>
-        <a href="?logout=1" class="btn btn-danger">Logout</a>
+    <div class="navbar">
+        <div class="logo"><img src="assets/images/logo.avif" alt="App Logo" >SerielleHealth</div>
+        <a href="../src/logout.php" class="btn btn-teal">Logout</a>
     </div>
 
     <input type="hidden" id="localPatientId" value="<?= htmlspecialchars($local_patient_id) ?>">
     <input type="hidden" id="emrPatientId" value="<?= htmlspecialchars($emr_patient_id) ?>">
 
+    <h3>Welcome, <?= htmlspecialchars($first_name) ?>!</h3>
     <div class="card">
         <h4>Pregnancy Safety Engine (PSE)</h4>
         <p>Check if your medication is safe for each trimester and find safer alternatives.</p>
@@ -144,8 +147,6 @@ a.text-light:hover { color: #48A6FF; text-decoration: none; }
         <div id="suggestions" class="autocomplete-suggestions"></div>
         <div id="ai-response"></div>
     </div>
-    
-    ---
 
     <div class="card">
         <h4>Recent Encounters & History</h4>
@@ -153,8 +154,6 @@ a.text-light:hover { color: #48A6FF; text-decoration: none; }
             <p class="text-center mt-3">Loading past encounters...</p>
         </div>
     </div>
-
-    ---
     
     <div class="card">
         <h4>Appointments</h4>
@@ -177,6 +176,7 @@ a.text-light:hover { color: #48A6FF; text-decoration: none; }
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// ... (JavaScript remains the same) ...
 const localPatientId = document.getElementById('localPatientId').value;
 const emrPatientId = document.getElementById('emrPatientId').value;
 const encounterAccordion = document.getElementById('encounterAccordion');
@@ -232,8 +232,6 @@ function sendQuery(query) {
     .then(res => res.json())
     .then(data => {
         aiResponse.innerHTML = data.response || "<em>No response from AI.</em>";
-        // Remove the timeout for better user experience, or use a shorter one
-        // setTimeout(() => { aiResponse.innerHTML = ""; }, 40000); 
     })
     .catch(err => {
         aiResponse.innerHTML = "<em>Error fetching response.</em>";
